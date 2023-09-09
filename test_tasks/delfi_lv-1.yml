@@ -1,0 +1,25 @@
+task:
+    options:  
+        url: 'https://www.delfi.lv/news/zinas/'
+
+        feed:
+            selector: 'a.text-mine-shaft'
+            attr: 'href'
+    
+        header:
+            selector: 'h1.text-size-22 text-size-md-30 d-inline'
+       
+        text:
+            selector: 'p'
+       
+        links:
+            selector: 'a'
+            attr: 'href'
+     
+        published:
+            selector: 'time'
+            attr: 'datetime'
+
+        images:
+            selector: 'img'
+            attr: 'src'

@@ -23,6 +23,7 @@ function getMethods(obj) {
 function extractData(p_func, selector, selector_attr, selector_must_contain) {
     const data = p_func(selector)
     res = []
+   
     for (let i in data){
         const el = data[i]
         //console.log("Got element", el)
