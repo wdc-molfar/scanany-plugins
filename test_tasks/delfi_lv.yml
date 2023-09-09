@@ -1,0 +1,33 @@
+task:
+    options:  
+        url: 'https://www.delfi.lv/news/zinas/'
+
+        feed_selector: 'a.text-mine-shaft'
+        feed_selector_type: 'css'
+        feed_selector_attr: 'href'
+        feed_selector_must_contain: ''
+
+        header_selector: 'h1.text-size-22 text-size-md-30 d-inline'
+        header_selector_type: 'css'
+        header_selector_attr: ''
+        header_selector_must_contain: ''
+
+        text_selector: 'p'
+        text_selector_type: 'css'
+        text_selector_attr: ''
+        text_selector_must_contain: ''
+
+        links_selector: 'a'
+        links_selector_type: 'tag name'
+        links_selector_attr: 'href'
+        links_selector_must_contain: ''
+
+        published_selector: 'time'
+        published_selector_type: 'tag name'
+        published_selector_attr: 'datetime'
+        published_selector_must_contain: ''
+
+        images_selector: 'img'
+        images_selector_type: 'tag name'
+        images_selector_attr: 'src'
+        images_selector_must_contain: ''

@@ -1,5 +1,6 @@
 const axios = require('axios');
 const cheerio = require('cheerio')
+const fs = require('fs')
 
 let scraperInstance
 const md5 = require("md5")
@@ -30,12 +31,18 @@ function extractData(p_func, selector, selector_attr, selector_must_contain) {
             continue
         }
 
-        console.log("not skipped")
 
         if (selector_attr === ""){
-            const t = el.text()
-            console.log("got text", t)
-            res.push(el.text())
+            try {
+
+                const t = el.text()
+                console.log("got text", t)
+                res.push(el.text())
+            }catch (e) {
+                console.log(e.toString())
+                continue
+            }
+
         }else{
             if (res.attribs)
                 res.push(res.attribs[selector_attr])
@@ -119,8 +126,8 @@ const startParsing = async(command, context) => {
 
                 let m_p = cheerio.load(p.data)
                 console.log("extracting text elements")
-                textElements = extractData(m_p, task.text_selector, task.text_selector_type, task.text_selector_attr, task.text_selector_must_contain)
-                console.log("extracted text elements")
+                textElements = extractData(m_p, task.text_selector, task.text_selector_attr, task.text_selector_must_contain)
+                console.log("extracted text elements", textElements)
                 m.href = link
                 // for (let i = 0; i < textElements.length; i++) {
                 //     m.text += textElements[i] + "\n"
@@ -172,6 +179,12 @@ const startParsing = async(command, context) => {
             }
 
         }
+
+
+        fname = Date.now().toString() + ".json"
+        rdata = JSON.stringify(res, null, " ")
+        fs.writeFileSync("testOutput/" + fname, rdata)
+
     } finally {
     }
     //console.log(JSON.stringify(res))

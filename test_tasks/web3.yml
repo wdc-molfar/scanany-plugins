@@ -1,0 +1,45 @@
+- use:
+    - webportal-static-plugin
+
+#Example file:
+#task:
+#  options:
+#    url: 'https://novyny.sme.sk/' - url of main page
+#
+#    feed_selector: 'h2.media-heading a' - selector for feed items (feed items = links to news pages)
+#    feed_selector_type: 'css' - feed selector type
+#    feed_selector_attr: 'href' -
+#    feed_selector_must_contain: ''
+#
+#    header_selector: 'h1.js-article-title'
+#    header_selector_type: 'css'
+#    header_selector_attr: ''
+#    header_selector_must_contain: ''
+#
+#    text_selector: 'p'
+#    text_selector_type: 'css'
+#    text_selector_attr: ''
+#    text_selector_must_contain: ''
+#
+#    links_selector: 'a'
+#    links_selector_type: 'tag name'
+#    links_selector_attr: 'href'
+#    links_selector_must_contain: ''
+#
+#    published_selector: 'div.article-published-top mb-m fs-12 sans-reg c-black-70'
+#    published_selector_type: 'css'
+#    published_selector_attr: ''
+#    published_selector_must_contain: ''
+#
+#    images_selector: 'img'
+#    images_selector_type: 'tag name'
+#    images_selector_attr: 'src'
+#    images_selector_must_contain: ''
+
+
+- start_parsing:
+    task:
+      $ref: task
+    into: result
+
+- return: result
