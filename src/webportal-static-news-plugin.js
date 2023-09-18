@@ -19,11 +19,76 @@ function getMethods(obj) {
     return result;
 }
 
+function extractName(tag_name) {
+    result = ""
+    for (let i = 0; i < tag_name.length; i++) {
+        if (tag_name[i].match(/[a-z]/i)){
+            result += tag_name[i]
+        }else{
+            break
+        }
+    }
+    return result
+}
+
+function sleepFor(sleepDuration){
+    var now = new Date().getTime();
+    while(new Date().getTime() < now + sleepDuration){ /* Do nothing */ }
+}
+
+function extract(extractor, data) {
+
+    if (!data.selector)
+        return []
+    const tag_name = extractName(data.selector)
+    console.log(tag_name)
+
+
+    const elements = extractor(data.selector)
+    res = []
+    for (let i in elements){
+        const element = elements[i]
+        // console.log(element)
+        if (!element)
+            continue
+        if (!element.name){
+            console.log(element)
+            continue
+        }
+        if (!element.name.toString().includes(tag_name)){
+            console.log(element)
+            continue
+        }
+        if (data.attr){
+            if (element.attribs){
+                res.push(element.attribs[data.attr])
+            }
+        }else{
+            try {
+                const t = element.getText()
+                console.log("got text", t)
+                res.push(element.getText())
+            }catch (e) {
+                console.log(e.toString())
+                continue
+            }
+        }
+    }
+    if (data.required){
+        res2 = []
+        for (let j in res){
+            if (!res[j].toString().includes(data.required))
+                continue
+            res2.push(res[j])
+            return res2
+        }
+    }
+    return res
+}
 
 function extractData(p_func, selector, selector_attr, selector_must_contain) {
     const data = p_func(selector)
     res = []
-   
     for (let i in data){
         const el = data[i]
         //console.log("Got element", el)
@@ -76,35 +141,50 @@ const startParsing = async(command, context) => {
 
     let main_resp;
     glock: try {
+        console.log(task)
         resp = await axios.get(task.url)
         console.log("Driver got", resp.request.toString(), resp.status);
         const page = cheerio.load(resp.data)
-        links2 = page(task.feed_selector)
+        links2 = page(task.feed.selector)
         links = []
         if (links2.length === 0) {
             console.log("No links found, quitting")
             break glock;
         }
+        console.log("Found", links2.length, "links")
         for (let i in links2) {
-            link = links2[i]
-            if (link == null || link.attribs == null)
-                continue
-            if (task.feed_selector_must_contain !== ""){
-                if (!link.toString().includes(task.feed_selector_must_contain))
+            try {
+                link = links2[i]
+                //console.log(link)
+                if (!link){
+                    console.log("skipping due to null")
+                    console.log(link)
                     continue
-            }
-            var l = ""
-            if (task.feed_selector_attr !== "") {
-                l = link.attribs["href"]
-                if (l === "")
-                    continue
+                }
+                if (task.feed.required){
+                    if (!link.toString().includes(task.feed.required))
+                        console.log("skipping because does not contain requred")
+                        continue
+                }
+                var l = ""
+                if (task.feed.attr !== "") {
+                    l = link.attribs[task.feed.attr]
+                    if (l === ""){
+                        console.log("Skipping because empty attr")
+                        continue
+                    }
 
-            }else{
-                l = link.text()
+                }else{
+                    l = link.text()
+                }
+                if (l.startsWith("/"))
+                    l = task.url + l
+                links.push(l)
+            } catch (e) {
+                console.log(e)
+                continue
             }
-            if (l.startsWith("/"))
-                l = task.url + l
-            links.push(l)
+
 
         }
         console.log("Got", links.length, "links on page")
@@ -127,7 +207,7 @@ const startParsing = async(command, context) => {
 
                 let m_p = cheerio.load(p.data)
                 console.log("extracting text elements")
-                textElements = extractData(m_p, task.text_selector, task.text_selector_attr, task.text_selector_must_contain)
+                textElements = extract(m_p, task.text)
                 console.log("extracted text elements", textElements)
                 m.href = link
                 // for (let i = 0; i < textElements.length; i++) {
@@ -137,15 +217,15 @@ const startParsing = async(command, context) => {
                 m.raw.text = m.text
 
                 try {
-                    m.links = extractData(m_p, task.links_selector, task.links_selector_attr, task.links_selector_must_contain)
+                    m.links = extract(m_p, task.links)
                 } catch (e) {
                     console.log(e)
                     console.log("Errors while getting m.Links")
                 }
 
                 try {
-                    if (!(task.published_selector === '')){
-                        const pub = extractData(m_p, task.published_selector, task.published_selector_attr, task.published_selector_must_contain)
+                    if (!(task.published.selector === '')){
+                        const pub = extract(m_p, task.published)
 
                         if (pub && pub.length()  > 0)
                             m.publishedAt = pub[0]
@@ -159,7 +239,7 @@ const startParsing = async(command, context) => {
                 if (!m.publishedAt)
                     m.publishedAt = new Date()
                 try {
-                    m.images = extractData(m_p, task.images_selector, task.images_selector_attr, task.images_selector_must_contain)
+                    m.images = extract(m_p, task.images)
                 } catch (e) {
                     console.log(e)
                     console.log("Errors while getting m.images")
@@ -183,6 +263,7 @@ const startParsing = async(command, context) => {
 
 
         fname = Date.now().toString() + ".json"
+        console.log(fname)
         rdata = JSON.stringify(res, null, " ")
         fs.writeFileSync("testOutput/" + fname, rdata)
 
